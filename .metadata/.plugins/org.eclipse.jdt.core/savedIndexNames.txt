@@ -1,0 +1,8 @@
+INDEX VERSION 1.134+C:\Users\User\Documents\DBSys\lab2\.metadata\.plugins\org.eclipse.jdt.core
+2775229526.index
+1865797976.index
+3397533435.index
+1082973815.index
+3181990668.index
+1582322233.index
+1372677264.index
