@@ -25,7 +25,7 @@ public class HeapFileIterator implements DbFileIterator {
             e.printStackTrace();
         }
         if (page != null) {
-            tupleIterator = page.iterator();
+            this.tupleIterator = page.iterator();
         }
     }
 
@@ -48,7 +48,7 @@ public class HeapFileIterator implements DbFileIterator {
                 }
                 if (page != null) {
                     tupleIterator = page.iterator();
-                    if (tupleIterator.hasNext()) {
+                    if (this.tupleIterator.hasNext()) {
                         return true;
                     }
                 }
@@ -62,7 +62,7 @@ public class HeapFileIterator implements DbFileIterator {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return tupleIterator.next();
+        return this.tupleIterator.next();
     }
 
     @Override
@@ -73,6 +73,6 @@ public class HeapFileIterator implements DbFileIterator {
 
     @Override
     public void close() {
-        tupleIterator = null;
+        this.tupleIterator = null;
     }
 }
