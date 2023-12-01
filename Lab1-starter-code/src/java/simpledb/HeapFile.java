@@ -116,21 +116,6 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
         return new HeapFileIterator(tid, this);
-    //     List<Tuple> allTuples = new ArrayList<>();
-    
-    //     for (int i = 0; i < this.numPages() ; i++) {
-    //         PageId pageId = new HeapPageId(this.getId(), i);
-    //         HeapPage page = null;
-    //         try {
-    //             page = (HeapPage) Database.getBufferPool().getPage(tid, pageId, Permissions.READ_ONLY);
-    //             Iterator<Tuple> tupleIterator = page.iterator();
-               
-    //         } catch (TransactionAbortedException | DbException e) {
-    //             e.printStackTrace();
-    //         }
-    //     }
-    
-    //     return new HeapFileIterator(allTuples);
 }
 }
 
