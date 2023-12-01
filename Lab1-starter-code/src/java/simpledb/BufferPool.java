@@ -39,7 +39,6 @@ public class BufferPool {
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
-        // some code goes here
         this.numPages = numPages;
         this.pages = new HashMap<PageId, Page>(numPages);
     }
@@ -75,13 +74,11 @@ public class BufferPool {
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
-        // some code goes here
         if(pages.containsKey(pid)){
             return pages.get(pid);
         }
-        else{  // in this case the page is not in the buffer, first we check if we can add it, and in case we do that
+        else{ 
             if(pages.size() < this.numPages) {
-                // we have to read a page through DbFile.readPage
                 Page pageToAdd = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
                 this.pages.put(pid, pageToAdd);
                 return pageToAdd;

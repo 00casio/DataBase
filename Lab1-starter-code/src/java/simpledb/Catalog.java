@@ -147,11 +147,11 @@ public class Catalog {
     }
 
     public Iterator<Integer> tableIdIterator() {
-    Vector<Integer> tableIds = new Vector<>();
+        Vector<Integer> tableIds = new Vector<>();
     
-    for (Table table : tables) {
-        tableIds.add(table.getFile().getId());
-    }
+        for (Table table : tables) {
+            tableIds.add(table.getFile().getId());
+        }
 
     return tableIds.iterator();
     }
