@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class Predicate implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    
     /** Constants used for return codes in Field.compare */
     public enum Op implements Serializable {
         EQUALS, GREATER_THAN, LESS_THAN, LESS_THAN_OR_EQ, GREATER_THAN_OR_EQ, LIKE, NOT_EQUALS;
@@ -43,7 +43,10 @@ public class Predicate implements Serializable {
         }
 
     }
-    
+
+    private int field;
+    private Op op;
+    private Field operand;
     /**
      * Constructor.
      * 
@@ -56,6 +59,7 @@ public class Predicate implements Serializable {
      */
     public Predicate(int field, Op op, Field operand) {
         // some code goes here
+
     }
 
     /**
