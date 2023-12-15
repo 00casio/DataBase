@@ -75,8 +75,10 @@ public class Filter extends Operator {
 
     @Override
     public void setChildren(OpIterator[] children) {
+	if (this.child!=children[0])
+	{
 	    this.child = children[0];
-
+	}
     }
     
 }
