@@ -58,8 +58,9 @@ public class Predicate implements Serializable {
      *            field value to compare passed in tuples to
      */
     public Predicate(int field, Op op, Field operand) {
-        // some code goes here
-
+        this.field = field;
+        this.op = op;
+        this.operand = operand;
     }
 
     /**
