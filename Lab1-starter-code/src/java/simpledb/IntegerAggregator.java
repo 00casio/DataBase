@@ -31,10 +31,12 @@ public class IntegerAggregator implements Aggregator {
      */
 
     public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
-        this.gbfield = gbfield;
-        this.gbfieldtype = gbfieldtype;
         this.afield = afield;
         this.what = what;
+        this.gbfield = gbfield;
+        this.gbfieldtype = gbfieldtype;
+        this.grpAggResMap = new HashMap<>();
+        this.grpCounterMap = new HashMap<>();
     }
 
     /**
@@ -48,8 +50,7 @@ public class IntegerAggregator implements Aggregator {
         IntField intfield = (IntField) tup.getField(this.afield);  
         int fieldval = intfield.getValue(); // Aggregate value
         Field field = tup.getField(this.gbfield);   
-        this.grpAggResMap = new HashMap<>();
-        this.grpCounterMap = new HashMap<>(); 
+
 
         if(this.grpAggResMap.size() == 0 && this.gbfield == Aggregator.NO_GROUPING){
             // in case  of first tuple and 
@@ -60,8 +61,9 @@ public class IntegerAggregator implements Aggregator {
 
         else if(this.gbfield == Aggregator.NO_GROUPING){
                 // in case of no grouping
-                int value = this.grpAggResMap.get(null);
-                int count = this.grpCounterMap.get(field);
+                int value = this.grpAggResMap.getOrDefault(field, 0);
+                int count = this.grpCounterMap.getOrDefault(field, 0);
+                
                 switch(this.what){
                     case COUNT:
                         this.grpCounterMap.put(null, count + 1);
@@ -115,7 +117,6 @@ public class IntegerAggregator implements Aggregator {
 
     }
     
-
     /**
      * Create a OpIterator over group aggregate results.
      * 
@@ -172,14 +173,14 @@ public class IntegerAggregator implements Aggregator {
                     case AVG:
                         field = new IntField(this.grpCounterMap.get(group_key) == 0 ? 0 : this.grpAggResMap.get(group_key) / this.grpCounterMap.get(group_key));
                         break;
-                case SUM:
-                    field = new IntField(this.grpAggResMap.get(null));
+                    case SUM:
+                        field = new IntField(this.grpAggResMap.get(group_key));
+                        break;
+                    case MIN:
+                        field = new IntField(this.grpAggResMap.get(group_key));
                     break;
-                case MIN:
-                    field = new IntField(this.grpAggResMap.get(null));
-                    break;
-                case MAX:
-                    field = new IntField(this.grpAggResMap.get(null));
+                    case MAX:
+                        field = new IntField(this.grpAggResMap.get(group_key));
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported aggregation operation");
