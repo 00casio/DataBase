@@ -10,7 +10,11 @@ import java.util.*;
 public class Aggregate extends Operator {
 
     private static final long serialVersionUID = 1L;
-
+    private OpIterator child;
+    private int afield;
+    private int gfield;
+    private Aggregator.Op aop;
+    private Aggregator aggregator;
     /**
      * Constructor.
      * 
@@ -30,7 +34,28 @@ public class Aggregate extends Operator {
      *            The aggregation operator to use
      */
     public Aggregate(OpIterator child, int afield, int gfield, Aggregator.Op aop) {
-	// some code goes here
+	this.child = child;
+    this.afield = afield;
+    this.aop = aop;
+    Type fieldType = this.child.getTupleDesc().getFieldType(this.afield);
+        if (this.gfield != -1) {
+            switch (fieldType) {
+                case INT_TYPE:
+                if(this.gfield != -1)
+                this.aggregator = new IntegerAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
+            else
+                this.aggregator = new IntegerAggregator(this.gfield, null, this.afield, this.aop);
+            break;
+        case STRING_TYPE:
+            if(this.gfield != -1)
+                this.aggregator = new StringAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
+            else
+                this.aggregator = new StringAggregator(this.gfield, null, this.afield, this.aop);
+            break;
+            }
+        }
+    }
+
     }
 
     /**
@@ -40,7 +65,7 @@ public class Aggregate extends Operator {
      * */
     public int groupField() {
 	// some code goes here
-	return -1;
+	return groupField();
     }
 
     /**
@@ -49,16 +74,17 @@ public class Aggregate extends Operator {
      *         null;
      * */
     public String groupFieldName() {
-	// some code goes here
-	return null;
+	if(this.groupField() != -1)
+	    return this.child.getTupleDesc().getFieldName(gfield);
+    else 
+        return null;
     }
 
     /**
      * @return the aggregate field
      * */
     public int aggregateField() {
-	// some code goes here
-	return -1;
+	return this.afield;
     }
 
     /**
@@ -66,8 +92,7 @@ public class Aggregate extends Operator {
      *         tuples
      * */
     public String aggregateFieldName() {
-	// some code goes here
-	return null;
+	return this.child.getTupleDesc().getFieldName(afield);
     }
 
     /**
