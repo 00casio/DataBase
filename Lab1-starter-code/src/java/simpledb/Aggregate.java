@@ -15,6 +15,7 @@ public class Aggregate extends Operator {
     private int gfield;
     private Aggregator.Op aop;
     private Aggregator aggregator;
+    private Type aggregatortypeGroup;
     /**
      * Constructor.
      * 
@@ -34,38 +35,42 @@ public class Aggregate extends Operator {
      *            The aggregation operator to use
      */
     public Aggregate(OpIterator child, int afield, int gfield, Aggregator.Op aop) {
-	this.child = child;
-    this.afield = afield;
-    this.aop = aop;
-    Type fieldType = this.child.getTupleDesc().getFieldType(this.afield);
-        if (this.gfield != -1) {
-            switch (fieldType) {
+        this.child = child;
+        this.afield = afield;
+        this.gfield = gfield;
+        this.aop = aop;
+        this.aggregatortypeGroup = this.child.getTupleDesc().getFieldType(this.afield);
+        if (this.gfield != Aggregator.NO_GROUPING) {
+            switch (this.aggregatortypeGroup) {
                 case INT_TYPE:
-                if(this.gfield != -1)
-                this.aggregator = new IntegerAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
-            else
-                this.aggregator = new IntegerAggregator(this.gfield, null, this.afield, this.aop);
-            break;
-        case STRING_TYPE:
-            if(this.gfield != -1)
-                this.aggregator = new StringAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
-            else
-                this.aggregator = new StringAggregator(this.gfield, null, this.afield, this.aop);
-            break;
+                    this.aggregator = new IntegerAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
+                    break;
+                case STRING_TYPE:
+                    this.aggregator = new StringAggregator(this.gfield, this.child.getTupleDesc().getFieldType(this.gfield), this.afield, this.aop);
+                    break;
+            }
+        } else {
+            switch (this.aggregatortypeGroup) {
+                case INT_TYPE:
+                    this.aggregator = new IntegerAggregator(Aggregator.NO_GROUPING, null, this.afield, this.aop);
+                    break;
+                case STRING_TYPE:
+                    this.aggregator = new StringAggregator(Aggregator.NO_GROUPING, null, this.afield, this.aop);
+                    break;
+
             }
         }
     }
-
-    }
-
     /**
      * @return If this aggregate is accompanied by a groupby, return the groupby
      *         field index in the <b>INPUT</b> tuples. If not, return
      *         {@link simpledb.Aggregator#NO_GROUPING}
      * */
     public int groupField() {
-	// some code goes here
-	return groupField();
+
+        if(this.gfield != -1)
+            return this.gfield;
+        return Aggregator.NO_GROUPING;
     }
 
     /**
@@ -100,16 +105,24 @@ public class Aggregate extends Operator {
      * */
     public Aggregator.Op aggregateOp() {
 	// some code goes here
-	return null;
+	return this.aop;
     }
 
     public static String nameOfAggregatorOp(Aggregator.Op aop) {
 	return aop.toString();
     }
-
+    private OpIterator agregateIterator;
     public void open() throws NoSuchElementException, DbException,
 	    TransactionAbortedException {
-	// some code goes here
+            super.open();
+            this.child.open();
+                while (this.child.hasNext()) {
+                    Tuple tuple = this.child.next();
+                    this.aggregator.mergeTupleIntoGroup(tuple);
+
+                }
+                this.agregateIterator = this.aggregator.iterator();
+                this.agregateIterator.open();
     }
 
     /**
@@ -120,12 +133,23 @@ public class Aggregate extends Operator {
      * aggregate. Should return null if there are no more tuples.
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
-	// some code goes here
-	return null;
+    
+        if (this.child.hasNext()) {
+            Tuple nextTuple = this.child.next();
+            this.aggregator.mergeTupleIntoGroup(nextTuple);
+
+        }
+    
+        if (this.agregateIterator.hasNext()) {
+            Tuple resultTuple = this.agregateIterator.next();
+            return resultTuple;
+        }
+    
+        return null;
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
-	// some code goes here
+        this.agregateIterator.rewind();
     }
 
     /**
@@ -140,23 +164,36 @@ public class Aggregate extends Operator {
      * iterator.
      */
     public TupleDesc getTupleDesc() {
-	// some code goes here
-	return null;
-    }
+        Type[] types;
+        String[] names;
+    
+        if (this.gfield != Aggregator.NO_GROUPING) {
 
+            types = new Type[]{this.child.getTupleDesc().getFieldType(this.gfield), Type.INT_TYPE};
+            names = new String[]{"group_by_field", "aggName(" + this.aop + ") (" + this.child.getTupleDesc().getFieldName(this.afield) + ")"};
+        } else {
+            types = new Type[]{Type.INT_TYPE}; 
+            names = new String[]{"aggName(" + this.aop + ") (" + this.child.getTupleDesc().getFieldName(this.afield) + ")"};
+        }
+        return new TupleDesc(types, names);
+    }
     public void close() {
-	// some code goes here
+        super.close();
+        this.agregateIterator.close();
     }
 
     @Override
     public OpIterator[] getChildren() {
-	// some code goes here
-	return null;
+
+	    OpIterator[] opIt = new OpIterator[1];
+        opIt[0] = this.child;
+        return  opIt;
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
-	// some code goes here
+
+        this.child = children[0];
     }
     
 }
