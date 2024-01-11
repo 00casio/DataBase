@@ -110,6 +110,7 @@ public class IntegerAggregator implements Aggregator {
                     case MAX:
                         this.grpAggResMap.put(field, Math.max(value, fieldval));
                         break;
+
                 }
             }
         }
@@ -133,9 +134,9 @@ public class IntegerAggregator implements Aggregator {
 
         if(this.gbfield == Aggregator.NO_GROUPING){
             // Aggregator.NO_GROUPING, in that case the result is a single tuple of the form (aggregateValue)
-            Type[] typeAr = new Type[]{Type.INT_TYPE};
-            String[] fieldAr = new String[]{"aggregateValue"};
-            td = new TupleDesc(typeAr, fieldAr);
+            Type[] typeArray = new Type[]{Type.INT_TYPE};
+            String[] fieldArray = new String[]{"aggregateValue"};
+            td = new TupleDesc(typeArray, fieldArray);
 
             switch(this.what){
                 case COUNT:
@@ -162,9 +163,9 @@ public class IntegerAggregator implements Aggregator {
             return new TupleIterator(td, tuples);
         }
         else{
-            Type[] typeAr = new Type[]{this.gbfieldtype, Type.INT_TYPE};
-            String[] fieldAr = new String[]{"groupValue", "aggregateValue"};
-            td = new TupleDesc(typeAr, fieldAr);
+            Type[] typeArray = new Type[]{this.gbfieldtype, Type.INT_TYPE};
+            String[] fieldArray = new String[]{"groupValue", "aggregateValue"};
+            td = new TupleDesc(typeArray, fieldArray);
             for (Field group_key : this.grpAggResMap.keySet()){
                 switch(this.what){
                     case COUNT:
