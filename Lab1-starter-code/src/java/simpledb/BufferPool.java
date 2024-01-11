@@ -2,6 +2,7 @@ package simpledb;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -150,9 +151,15 @@ public class BufferPool {
      * @param t the tuple to add
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t)
-        throws DbException, IOException, TransactionAbortedException {
-        // some code goes here
-        // not necessary for lab1
+            throws DbException, IOException, TransactionAbortedException {
+        DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);
+        ArrayList<Page> pagesToBeDirtied = dbFile.insertTuple(tid, t);
+        for (Page page : pagesToBeDirtied) {
+            PageId pid = page.getId();
+            discardPage(pid);
+            page.markDirty(true, tid);
+            this.pages.put(pid, page);
+        }
     }
 
     /**
@@ -168,10 +175,17 @@ public class BufferPool {
      * @param tid the transaction deleting the tuple.
      * @param t the tuple to delete
      */
-    public  void deleteTuple(TransactionId tid, Tuple t)
-        throws DbException, IOException, TransactionAbortedException {
-        // some code goes here
-        // not necessary for lab1
+    public void deleteTuple(TransactionId tid, Tuple t)
+            throws DbException, IOException, TransactionAbortedException {
+        PageId pid = t.getRecordId().getPageId();
+        DbFile dbFile = Database.getCatalog().getDatabaseFile(pid.getTableId());
+        ArrayList<Page> pagesToBeDirtied = dbFile.deleteTuple(tid, t);
+        for (Page page : pagesToBeDirtied) {
+            PageId pageId = page.getId();
+            discardPage(pageId);
+            page.markDirty(true, tid);
+            this.pages.put(pageId, page);
+        }
     }
 
     /**
