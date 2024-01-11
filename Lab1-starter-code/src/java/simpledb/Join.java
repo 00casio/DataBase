@@ -101,18 +101,19 @@ public class Join extends Operator {
      * @return The next matching tuple.
      * @see JoinPredicate#filter
      */
-    private boolean not_end = false;
     private Tuple t1 = null;
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         TupleDesc t = this.getTupleDesc();
-        while(not_end || this.child1.hasNext()) {
-            if(!not_end){
-            t1 = this.child1.next();
+    
+        while (this.child1.hasNext() || (t1 != null)) {
+            if (t1 == null) {
+                t1 = this.child1.next();
             }
+    
             while (this.child2.hasNext()) {
                 Tuple t2 = this.child2.next();
+    
                 if (this.pred.filter(t1, t2)) {
-                    not_end = true;
                     Tuple result = new Tuple(t);
                     int j = 0;
                     for (int i = 0; i < t1.getTupleDesc().numFields(); i++) {
@@ -126,11 +127,14 @@ public class Join extends Operator {
                     return result;
                 }
             }
-            not_end = false;
+    
+            t1 = null;
             this.child2.rewind();
         }
+    
         return null;
     }
+    
 
     @Override
     public OpIterator[] getChildren() {
