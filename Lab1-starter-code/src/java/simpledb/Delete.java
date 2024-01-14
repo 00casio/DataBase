@@ -66,23 +66,23 @@ public class Delete extends Operator {
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         if(!this.flag){
-        int deletedCount = 0;
+        int count = 0;
         if(this.child.hasNext()){
         
         while (this.child.hasNext()) {
         Tuple tuple = this.child.next();
             try {
                 Database.getBufferPool().deleteTuple(this.t, tuple);
-                
+                count++;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            deletedCount++;
+            
         }
     }
         this.flag = true;
         Tuple resultTuple = new Tuple(this.tpd);
-        resultTuple.setField(0, new IntField(deletedCount));
+        resultTuple.setField(0, new IntField(count));
         return resultTuple;
     }
     else 
