@@ -220,7 +220,6 @@ public class BufferPool {
      */
     private synchronized  void flushPage(PageId pid) throws IOException {
         HeapPage hp = (HeapPage) this.pages.get(pid);
-        
         if (hp != null && hp.isDirty() != null) {
             Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(hp);
             hp.markDirty(false, hp.isDirty());
