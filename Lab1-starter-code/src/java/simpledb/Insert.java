@@ -64,29 +64,28 @@ public class Insert extends Operator {
      * @see Database#getBufferPool
      * @see BufferPool#insertTuple
      */
+    private boolean flag;
 
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
 
-        if (child.hasNext()) {
-            int counter = 0;
-            while (child.hasNext()) {
+        int counter = 0;
+        if(!this.flag){  
+            while(this.child.hasNext()){
                 try {
-                    Database.getBufferPool().insertTuple(tid, tableId, child.next());
-                    counter++;
-                } catch (IOException e) {
-                    throw new DbException("Error inserting tuple");
+                    Database.getBufferPool().insertTuple(this.tid, this.tableId, this.child.next());
+                    counter ++;}
+                catch (IOException e){
+                    throw new DbException(" IOException");
                 }
             }
-            Tuple resTup = new Tuple(td);
-            resTup.setField(0, new IntField(counter));
-    
-            return resTup;
-        } else {
-            return null;
+            this.flag = true;
+            Tuple t = new Tuple(this.td);
+            t.setField(0, new IntField(counter));
+            return t;
         }
+        else
+            return null;
     }
-    
-
 
     @Override
     public OpIterator[] getChildren() {

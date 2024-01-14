@@ -2,6 +2,7 @@ package simpledb;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.ArrayList;
 
 /**
@@ -194,9 +195,10 @@ public class BufferPool {
      *     break simpledb if running in NO STEAL mode.
      */
     public synchronized void flushAllPages() throws IOException {
-        // some code goes here
-        // not necessary for lab1
-
+        Set<PageId> pageIds = this.pages.keySet();
+        for (PageId pid : pageIds) {
+            flushPage(pid);
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -208,8 +210,8 @@ public class BufferPool {
         are removed from the cache so they can be reused safely
     */
     public synchronized void discardPage(PageId pid) {
-        // some code goes here
-        // not necessary for lab1
+        this.pages.remove(pid);
+
     }
 
     /**
@@ -217,8 +219,11 @@ public class BufferPool {
      * @param pid an ID indicating the page to flush
      */
     private synchronized  void flushPage(PageId pid) throws IOException {
-        // some code goes here
-        // not necessary for lab1
+        HeapPage hp = (HeapPage) this.pages.get(pid);
+        if (hp != null && hp.isDirty() != null) {
+            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(hp);
+            hp.markDirty(false, hp.getId());
+        }
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -233,8 +238,29 @@ public class BufferPool {
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
     private synchronized  void evictPage() throws DbException {
-        // some code goes here
-        // not necessary for lab1
+
+        ArrayList<HeapPageId> IdOfPages = new ArrayList<>();
+
+        Set<PageId> PageOfIds = this.pages.keySet();
+        for(PageId pid : this.pages.keySet()){
+            IdOfPages.add((HeapPageId) pid);
+        }
+        double randNum = Math.random(); // random eviction policy
+        int randInd = (int) (randNum * IdOfPages.size());
+        if(IdOfPages.size() != 0){
+            PageId idToEvict = IdOfPages.get(randInd);
+            try{
+                flushPage(idToEvict);  
+                discardPage(idToEvict);
+            }
+            catch(IOException e){
+                throw new DbException("Eviction failed");
+            }
+        }
+
     }
 
 }
+
+
+
