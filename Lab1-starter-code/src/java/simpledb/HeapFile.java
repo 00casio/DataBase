@@ -1,5 +1,4 @@
 package simpledb;
-import static org.junit.Assert.fail;
 
 import java.io.*;
 import java.util.*;
